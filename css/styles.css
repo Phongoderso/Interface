@@ -1,6 +1,9 @@
-body {  
+* {
+    font-family: 'Varela Round', sans-serif;
+}
+
+body {
     background-color: #485665;
-    scrollbar-width: none;
     padding: 0px;
     margin-top: 50px;
 }
@@ -13,7 +16,7 @@ body {
 .container1{
     margin-left: 250px;
     width:900px;
-    height:130px;
+    height: 130px;
     border-top-left-radius: 15px;
     border-top-right-radius: 15px;
     background:#8E7C93;
@@ -25,8 +28,10 @@ body {
     height:110px;
     background:#D0A5C0;
     margin-top: 20px;
+    display: flex;
+    justify-content: right;
+    align-items: center;
 }
-
 .container3{
     width: min(calc(100% - 250px), 1400px);
     margin-left: 250px;
@@ -43,22 +48,22 @@ body {
     background: #D0A5C0;
 }
 .container5{
-    width: calc(100% - 920px);
+    width: calc(100% - 1000px);
     height: calc(100% - 70px);
     background: #D0A5C0;
     margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 20px;
 }
 
 .container6{
     width: 95%;
     height: 92.5%;
     background: #D9D9D9;
-    margin: 2.50000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000067%;
-}
-.livefeed{
-    width: 100%;
-    height: 100%;
-    margin: 0px;
+    margin: 2.5%;
 }
 
 .container4, .container5{
@@ -66,4 +71,94 @@ body {
     margin-bottom: 40px;
     padding: 0px;
     border: none;
+}
+
+.batterybg1{
+    width: 140px;
+    height: 80px;
+    background: #485665;
+    border-radius: 5px;
+}
+.batterybg2{
+    width:10px;
+    height: 30px;
+    background: #485665;
+    margin-right: 40px;
+}
+
+.batterybar1{
+    font-size: 23px;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-left:20px;
+    color: #8E7C93;
+}
+
+.scheinenwerfer1 {
+    width: 140px; /* Breite der oberen Kante */
+    height: 0;
+    border-left: 30px solid transparent;
+    border-right: 30px solid transparent;
+    border-bottom: 90px solid #40FF70;
+    margin-bottom: 20px;
+}
+
+.scheinenwerfer2 {
+    width: 140px; /* Breite der oberen Kante */
+    height: 0;
+    border-left: 30px solid transparent;
+    border-right: 30px solid transparent;
+    border-bottom: 90px solid #40FF70;
+    transform: rotate(180deg);
+}
+
+.auto {
+    width: 150px;
+    height: 250px;
+    background-color: #eeeeee;
+    border-radius: 20px;
+}
+
+.outside {
+    margin-bottom: 35px;
+    font-size: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.inside {
+    position: relative;
+    margin: 0px 15px;
+    width: 280px;
+    height: 35px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.inside::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 2px;
+    background-color: black;
+}
+
+.linie {
+    display: none;
+}
+
+.smollinie {
+    width: 2px;
+    height: 25px;
+    background-color: black;
+    position: relative;
+    z-index: 1;
 }
