@@ -13,6 +13,15 @@ body {
     display: flex;
 }
 
+.title {
+    font-size: 30px;
+    left: 300px;
+    position: absolute;
+    color: #8c1af6;
+    font-family: 'Oswald', sans-serif;
+    font-size: 75px;
+}
+
 .container1{
     margin-left: 250px;
     width:900px;
@@ -64,6 +73,14 @@ body {
     height: 92.5%;
     background: #D9D9D9;
     margin: 2.5%;
+    overflow: hidden;
+}
+
+.container6 img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
 .container4, .container5{
@@ -75,7 +92,7 @@ body {
 
 .batterybg1{
     width: 140px;
-    height: 80px;
+    height: 90px;
     background: #485665;
     border-radius: 5px;
 }
@@ -88,31 +105,36 @@ body {
 
 .batterybar1{
     font-size: 23px;
-    width: 80px;
-    height: 80px;
+    width: 120px;
+    height: 90px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding-left:20px;
+    padding-left:10px;
     color: #8E7C93;
 }
 
-.scheinenwerfer1 {
-    width: 140px; /* Breite der oberen Kante */
-    height: 0;
-    border-left: 30px solid transparent;
-    border-right: 30px solid transparent;
-    border-bottom: 90px solid #40FF70;
-    margin-bottom: 20px;
+#scheinenwerfer1 {
+    width: 140px;
+    height: 90px;
+    background-color: #40FF70;
+    clip-path: polygon(0% 0%, 100% 0%, 85% 100%, 15% 100%);
+    margin-top: 20px;
+    display: block;
 }
 
-.scheinenwerfer2 {
-    width: 140px; /* Breite der oberen Kante */
-    height: 0;
-    border-left: 30px solid transparent;
-    border-right: 30px solid transparent;
-    border-bottom: 90px solid #40FF70;
-    transform: rotate(180deg);
+#scheinenwerfer2 {
+    width: 140px;
+    height: 90px;
+    background-color: #40FF70;
+    clip-path: polygon(0% 100%, 100% 100%, 85% 0%, 15% 0%);
+    margin-bottom: 20px;
+    display: block;
+}
+#scheinenwerfer1, #scheinenwerfer2 {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .auto {
@@ -123,6 +145,10 @@ body {
 }
 
 .outside {
+    background-color: #D9D9D9;
+    width: 360px;
+    border-radius: 10px;
+    height: 45px;
     margin-bottom: 35px;
     font-size: 20px;
     display: flex;
@@ -149,6 +175,7 @@ body {
     transform: translateY(-50%);
     height: 2px;
     background-color: black;
+    z-index: 1;
 }
 
 .linie {
@@ -161,4 +188,17 @@ body {
     background-color: black;
     position: relative;
     z-index: 1;
+}
+
+.slider {
+    width: 20px;
+    height: 30px;
+    background-color: black;
+    border-radius: 20px;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    transition: left 0.2s ease;
+    z-index: 10;
 }
