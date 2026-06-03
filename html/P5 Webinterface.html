@@ -1,40 +1,191 @@
 <!DOCTYPE html>
-    <html lang="de">
-    <head>
-        <title>Natasha Webinterface</title>
-        <link rel="stylesheet" type="text/css" href="../css/styles.css">
-       
-        
-    </head>
+<html lang="de">
+<head>
+    <title>Natasha Webinterface</title>
+    <link rel="stylesheet" type="text/css" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
 
-        <body>
-            <div class="interface" id="top">
-                    <div class="container1">
-                        <div class="container2">
-                            
-                        </div>
-                    </div>
-                
-                    <div class="invis">
-                        
-                    </div>
-            </div>
-            <div class="interface">
-                <div class="container3">
-                    <div class="container4">
-                        <div class="container6">
-                            
-                        </div>
-                    </div>
-                    <div class="container5">
+</head>
+
+<body>
+<div class="interface" >
+    <div class="container1">
+        <div class="container2">
+            <!-- Batterie oder sowas -->
+            <div class="batterybg1">
+                <div class="batterybar1">
+                    <div id="">
+                        V = <span id="voltage">-</span> V <br>
+                        A = <span id="ampere">-</span> A
                     </div>
                 </div>
             </div>
-      
-      
-      
-      
-        </body>
+            <div class="batterybg2">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="interface">
+    <div class="container3">
+        <div class="container4">
+            <div class="container6">
 
-    
-    </html>
+            </div>
+        </div>
+        <div class="container5">
+            <!-- das andere Zeug -->
+
+            <div class="outside">
+                L
+                <div class="inside">
+                    <div class="smollinie"></div>
+                    <div class="smollinie"></div>
+                    <div class="smollinie"></div>
+                    <div class="smollinie"></div>
+                    <div class="smollinie"></div>
+                </div>
+                R
+            </div>
+
+            <!---->
+            <div class="scheinenwerfer2">
+            </div>
+            <div class="auto">
+
+            </div>
+            <div class="scheinenwerfer1">
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+
+
+
+</body>
+
+<script>
+    // Frontend: Polling des Python-Backends und globale Zugriffsfunktionen
+    const API_BASE = 'http://localhost:5000';
+    const POLL_MS = 500;
+
+    window.sensorData = {
+        voltage: null,
+        ampere: null,
+        distance_front: null,
+        distance_back: null,
+        steering: null,
+        connected: false
+    };
+
+
+
+
+    // holt die aktuelle Volt zahl von der Batterie
+    async function fetchBatteryVoltage() {
+        try {
+            const res = await fetch(`${API_BASE}/sensors/batt/voltage`);
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const j = await res.json();
+            window.sensorData.voltage = j.voltage;
+            window.sensorData.connected = true;
+            return j.voltage;
+        } catch (e) {
+            window.sensorData.connected = false;
+            console.error('fetchBatteryVoltage error', e);
+            return null;
+        }
+    }
+
+    // holt die aktuelle Ampere zahl von der Batterie
+    async function fetchBatteryAmpere() {
+        try {
+            const res = await fetch(`${API_BASE}/sensors/batt/ampere`);
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const j = await res.json();
+            window.sensorData.ampere = j.ampere;
+            window.sensorData.connected = true;
+            return j.ampere;
+        } catch (e) {
+            window.sensorData.connected = false;
+            console.error('fetchBatteryAmpere error', e);
+            return null;
+        }
+    }
+
+    // holt den Lenkungswert
+    async function fetchSteering() {
+        try {
+            const res = await fetch(`${API_BASE}/sensors/steering`);
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const j = await res.json();
+            window.sensorData.steering = j.steering;
+            window.sensorData.connected = true;
+            return j.steering;
+        } catch (e) {
+            window.sensorData.connected = false;
+            console.error('fetchSteering error', e);
+            return null;
+        }
+    }
+
+    // holt die Abstände vorne und hinten
+    async function fetchDistances() {
+        try {
+            const res = await fetch(`${API_BASE}/sensors/distance`);
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const j = await res.json();
+            window.sensorData.distance_front = j.distance_front;
+            window.sensorData.distance_back = j.distance_back;
+            window.sensorData.connected = true;
+            return {
+                distance_front: j.distance_front,
+                distance_back: j.distance_back
+            };
+        } catch (e) {
+            window.sensorData.connected = false;
+            console.error('fetchDistances error', e);
+            return null;
+        }
+    }
+
+    // holt ALLE Sensorwerte auf einmal
+    async function fetchAllSensors() {
+        try {
+            await Promise.all([
+                fetchBatteryVoltage(),
+                fetchBatteryAmpere(),
+                fetchSteering(),
+                fetchDistances()
+            ]);
+            // Aktualisiere die HTML-Elemente mit den neuen Werten
+            document.getElementById('voltage').textContent = window.sensorData.voltage !== null ? window.sensorData.voltage.toFixed(2) : '-';
+            document.getElementById('ampere').textContent = window.sensorData.ampere !== null ? window.sensorData.ampere.toFixed(2) : '-';
+            return window.sensorData;
+        } catch (e) {
+            console.error('fetchAllSensors error', e);
+        }
+    }
+
+    window.getSensorData = () => ({ ...window.sensorData });
+    window.fetchSteering = fetchSteering;
+    window.fetchDistances = fetchDistances;
+    window.fetchBatteryVoltage = fetchBatteryVoltage;
+    window.fetchBatteryAmpere = fetchBatteryAmpere;
+    window.fetchAllSensors = fetchAllSensors;
+
+    // Starte Polling wenn die Seite geladen ist
+    window.addEventListener('load', () => {
+        // Einmal sofort abfragen
+        fetchAllSensors();
+        // Dann alle POLL_MS ms wiederholen
+        window.pollId = setInterval(fetchAllSensors, POLL_MS);
+        console.log('Polling gestartet. Um zu stoppen: clearInterval(window.pollId)');
+    });
+</script>
+
+
+</html>
