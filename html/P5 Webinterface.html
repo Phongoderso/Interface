@@ -3,20 +3,22 @@
 <head>
     <title>Natasha Webinterface</title>
     <link rel="stylesheet" type="text/css" href="../css/styles.css">
+    <!--Schriftarten-->
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
-
 </head>
-
 <body>
 <div class="interface" >
     <div class="container1">
         <div class="container2">
+            <div class="title">NaTAScHA_InTERfACe</div>
             <!-- Batterie oder sowas -->
             <div class="batterybg1">
                 <div class="batterybar1">
-                    <div id="">
+                    <div>
                         V = <span id="voltage">-</span> V <br>
                         A = <span id="ampere">-</span> A
                     </div>
@@ -31,7 +33,7 @@
     <div class="container3">
         <div class="container4">
             <div class="container6">
-
+                <img id="videoStream" src="http://localhost:5000/video_feed" alt="Live Video Stream">
             </div>
         </div>
         <div class="container5">
@@ -45,17 +47,18 @@
                     <div class="smollinie"></div>
                     <div class="smollinie"></div>
                     <div class="smollinie"></div>
+                    <div class="slider"></div>
                 </div>
                 R
             </div>
 
             <!---->
-            <div class="scheinenwerfer2">
+            <div id="scheinenwerfer1"> <span id="distance_front">  ~  </span> mm
             </div>
             <div class="auto">
 
             </div>
-            <div class="scheinenwerfer1">
+            <div id="scheinenwerfer2"> <span id="distance_back">  ~  </span> mm
             </div>
         </div>
     </div>
@@ -84,15 +87,38 @@
 
 
 
+    const STEERING_MIN = 0;
+    const STEERING_MAX = 2.48;
+
+    function clamp(value, min, max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    function updateSteeringSlider(value) {
+        const slider = document.querySelector('.slider');
+        if (!slider) return;
+
+        if (value == null || Number.isNaN(value)) {
+            slider.style.left = '50%';
+            slider.style.transform = 'translate(-50%, -50%)';
+            return;
+        }
+
+        const clamped = clamp(value, STEERING_MIN, STEERING_MAX);
+        const percent = (clamped - STEERING_MIN) / (STEERING_MAX - STEERING_MIN) * 100;
+        slider.style.left = `calc(${percent}% - 10px)`;
+        slider.style.transform = 'translateY(-50%)';
+    }
+
     // holt die aktuelle Volt zahl von der Batterie
     async function fetchBatteryVoltage() {
         try {
             const res = await fetch(`${API_BASE}/sensors/batt/voltage`);
             if (!res.ok) throw new Error('HTTP ' + res.status);
             const j = await res.json();
-            window.sensorData.voltage = j.voltage;
+            window.sensorData.voltage = j.battery;
             window.sensorData.connected = true;
-            return j.voltage;
+            return window.sensorData.voltage;
         } catch (e) {
             window.sensorData.connected = false;
             console.error('fetchBatteryVoltage error', e);
@@ -118,18 +144,42 @@
 
     // holt den Lenkungswert
     async function fetchSteering() {
-        try {
-            const res = await fetch(`${API_BASE}/sensors/steering`);
-            if (!res.ok) throw new Error('HTTP ' + res.status);
-            const j = await res.json();
-            window.sensorData.steering = j.steering;
-            window.sensorData.connected = true;
-            return j.steering;
-        } catch (e) {
-            window.sensorData.connected = false;
-            console.error('fetchSteering error', e);
-            return null;
+        const endpoints = [
+            `${API_BASE}/sensors/steering`,
+            `${API_BASE}/sensors/lenkung`
+        ];
+
+        for (const url of endpoints) {
+            try {
+                const res = await fetch(url);
+                if (!res.ok) continue;
+
+                const text = await res.text();
+                let steering = null;
+
+                try {
+                    const parsed = JSON.parse(text);
+                    steering = Number(parsed.steering ?? parsed.lenkung ?? parsed);
+                } catch {
+                    steering = parseFloat(text);
+                }
+
+                if (Number.isNaN(steering)) {
+                    throw new Error(`Invalid steering value from ${url}: ${text}`);
+                }
+
+                window.sensorData.steering = steering;
+                window.sensorData.connected = true;
+                updateSteeringSlider(steering);
+                return steering;
+            } catch (e) {
+                console.warn(`fetchSteering endpoint failed: ${url}`, e);
+            }
         }
+
+        window.sensorData.connected = false;
+        console.error('fetchSteering error: all endpoints failed');
+        return null;
     }
 
     // holt die Abstände vorne und hinten
@@ -152,7 +202,7 @@
         }
     }
 
-    // holt ALLE Sensorwerte auf einmal
+    // holt alle Sensorwerte auf einmal
     async function fetchAllSensors() {
         try {
             await Promise.all([
@@ -162,8 +212,17 @@
                 fetchDistances()
             ]);
             // Aktualisiere die HTML-Elemente mit den neuen Werten
-            document.getElementById('voltage').textContent = window.sensorData.voltage !== null ? window.sensorData.voltage.toFixed(2) : '-';
-            document.getElementById('ampere').textContent = window.sensorData.ampere !== null ? window.sensorData.ampere.toFixed(2) : '-';
+            console.log('Sensorwerte aktualisiert:', window.sensorData);
+            updateSteeringSlider(window.sensorData.steering);
+            document.getElementById('voltage').textContent = window.sensorData.voltage != null ? window.sensorData.voltage.toFixed(2) : '-';
+            document.getElementById('ampere').textContent = window.sensorData.ampere != null ? window.sensorData.ampere.toFixed(2) : '-';
+            document.getElementById('distance_front').textContent = window.sensorData.distance_front != null ? window.sensorData.distance_front.toFixed(0) : '~';
+            document.getElementById('distance_back').textContent = window.sensorData.distance_back != null ? window.sensorData.distance_back.toFixed(0) : '~';
+            document.getElementById('scheinenwerfer1').style.backgroundColor = window.sensorData.distance_front < 500 ? 'red' : window.sensorData.distance_front < 1000 ? 'yellow' : window.sensorData.distance_front < 8000 ? 'green' : 'black';
+            document.getElementById('scheinenwerfer2').style.backgroundColor = window.sensorData.distance_back < 500 ? 'red' : window.sensorData.distance_back < 1000 ? 'yellow' : window.sensorData.distance_back < 8000 ? 'green' : 'black';
+            document.getElementById('scheinenwerfer1').style.visibility = window.sensorData.distance_front < 8000 ? 'visible' : 'hidden';
+            document.getElementById('scheinenwerfer2').style.visibility = window.sensorData.distance_back < 8000 ? 'visible' : 'hidden';
+
             return window.sensorData;
         } catch (e) {
             console.error('fetchAllSensors error', e);
@@ -179,9 +238,10 @@
 
     // Starte Polling wenn die Seite geladen ist
     window.addEventListener('load', () => {
+        updateSteeringSlider(null);
         // Einmal sofort abfragen
         fetchAllSensors();
-        // Dann alle POLL_MS ms wiederholen
+        // Dann alle 500 ms wiederholen
         window.pollId = setInterval(fetchAllSensors, POLL_MS);
         console.log('Polling gestartet. Um zu stoppen: clearInterval(window.pollId)');
     });
